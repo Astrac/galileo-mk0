@@ -2,26 +2,33 @@ package astrac.minerva.rk4
 
 import cats._
 
-trait State[S, D, T] {
-  def semigroup: Semigroup[S]
-  def derivate: Derivate[D, T]
+trait Scalable[S] {
   def scale(s: S, factor: Double): S
-  def fromDerivate(d: D, t: T): S
+  def half(s: S): S = scale(s, 0.5)
 }
 
-trait Derivate[D, T] {
+trait State[S, D, T] extends Scalable[S] {
+  def derivate: Derivate[D, T]
+  def fromDerivate(d: D, t: T): S
+  def semigroup: Semigroup[S]
+}
+
+object State extends StateInstances
+
+trait Derivate[D, T] extends Scalable[D] {
   def monoid: Monoid[D]
-  def scale(d: D, factor: Double): D
   def time: Time[T]
 }
 
-trait Time[T] {
-  def monoid: Monoid[T]
+object Derivate extends DerivateInstances
+
+trait Time[T] extends Scalable[T] {
+  def group: Group[T]
   def ordering: Ordering[T]
-  def half(t: T): T
-  def negate(t: T): T
   def ratio(num: T, den: T): Double
 }
+
+object Time extends TimeInstances
 
 trait Integrable[S, D, T] {
   implicit def state: State[S, D, T]

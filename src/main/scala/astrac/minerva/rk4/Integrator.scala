@@ -14,49 +14,39 @@ class Integrator[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
   )
 
   def consume(
-    initial: S,
-    symTime: T,
-    dt: T,
-    accumulator: T
+    initial: S, symTime: T, dt: T, accumulator: T
   ): (S, Option[S], T, T) = {
     @tailrec
     def consumeAcc(
-      current: S,
-      previous: Option[S],
-      t: T,
-      accumulator: T
+      current: S, previous: Option[S], t: T, accumulator: T
     ): (S, Option[S], T, T) =
       if (int.time.ordering.lt(accumulator, dt))
         (current, previous, t, accumulator)
       else consumeAcc(
         fnStepper.in(t, dt)(current),
         Some(current),
-        int.time.monoid.combine(t, dt),
-        int.time.monoid.combine(accumulator, int.time.negate(dt))
+        int.time.group.combine(t, dt),
+        int.time.group.remove(accumulator, dt)
       )
 
     consumeAcc(initial, None, symTime, accumulator)
   }
 
   def integrate(
-    initial: S,
-    startTime: T,
-    samplingTimes: Iterable[T],
-    minDt: T,
-    maxDt: T
+    initial: S, startTime: T, samplingTimes: Iterable[T], minDt: T, maxDt: T
   ): Iterable[S] =
     samplingTimes
       .scanLeft(
-        Step(initial, None, startTime, startTime, int.time.monoid.empty)
+        Step(initial, None, startTime, startTime, int.time.group.empty)
       ) { (lastStep, newFrameTime) =>
 
-          val accumulator = int.time.monoid.combine(
+          val accumulator = int.time.group.combine(
             lastStep.accumulator,
             int.time.ordering.min(
               maxDt,
-              int.time.monoid.combine(
+              int.time.group.combine(
                 newFrameTime,
-                int.time.negate(lastStep.frameTime)
+                int.time.group.inverse(lastStep.frameTime)
               )
             )
           )

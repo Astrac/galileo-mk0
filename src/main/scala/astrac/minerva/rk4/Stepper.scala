@@ -12,14 +12,14 @@ class Stepper[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
   ): D = {
     derivate(
       int.state.semigroup.combine(state, int.state.fromDerivate(lastDerivate, dt)),
-      int.time.monoid.combine(t, dt)
+      int.time.group.combine(t, dt)
     )
   }
 
   def step(initial: S, fn: (S, T) => D, t: T, dt: T): S = {
     import int._
 
-    val a = evaluate(initial, fn, t, time.monoid.empty, derivate.monoid.empty)
+    val a = evaluate(initial, fn, t, time.group.empty, derivate.monoid.empty)
     val b = evaluate(initial, fn, t, time.half(dt), a)
     val c = evaluate(initial, fn, t, time.half(dt), b)
     val d = evaluate(initial, fn, t, dt, c)
