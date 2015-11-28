@@ -11,7 +11,7 @@ class Stepper[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
     lastDerivate: D
   ): D = {
     derivate(
-      int.state.semigroup.combine(state, int.state.fromDerivate(lastDerivate, dt)),
+      int.state.monoid.combine(state, int.state.fromDerivate(lastDerivate, dt)),
       int.time.group.combine(t, dt)
     )
   }
@@ -31,6 +31,6 @@ class Stepper[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
         Nil
     ), 1.0 / 6.0)
 
-    state.semigroup.combine(initial, state.fromDerivate(dxdt, dt))
+    state.monoid.combine(initial, state.fromDerivate(dxdt, dt))
   }
 }

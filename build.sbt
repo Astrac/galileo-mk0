@@ -5,7 +5,8 @@ lazy val shared = (project in file(".")).
     libraryDependencies ++= Seq(
       "org.spire-math" %% "cats" % "0.3.0",
       "org.spire-math" %% "spire" % "0.11.0",
-      "com.chuusai" %% "shapeless" % "2.2.5"
+      "com.chuusai" %% "shapeless" % "2.2.5",
+      "org.scalatest" %% "scalatest" % "2.2.4" % "test"
     ),
     scalaVersion := scalaV
   )

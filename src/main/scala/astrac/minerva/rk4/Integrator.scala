@@ -3,7 +3,7 @@ package astrac.minerva.rk4
 import scala.annotation.tailrec
 
 class Integrator[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
-  lazy val fnStepper = stepper(fn)
+  lazy val fnStepper = new Stepper(fn)
 
   case class Step(
     current: S,
@@ -13,7 +13,7 @@ class Integrator[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
     accumulator: T
   )
 
-  def consume(
+  private def consume(
     initial: S, symTime: T, dt: T, accumulator: T
   ): (S, Option[S], T, T) = {
     @tailrec
@@ -32,44 +32,51 @@ class Integrator[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
     consumeAcc(initial, None, symTime, accumulator)
   }
 
-  def integrate(
-    initial: S, startTime: T, samplingTimes: Iterable[T], minDt: T, maxDt: T
+  private def interpolate(minDt: T)(step: Step): S = step.previous.fold(step.current) { previous =>
+    val alpha = int.time.ratio(step.accumulator, minDt)
+
+    int.state.monoid.combine(
+      int.state.scale(step.current, alpha),
+      int.state.scale(previous, 1 - alpha)
+    )
+  }
+
+  private def nextStep(minDt: T, maxDt: T)(lastStep: Step, newFrameTime: T): Step = {
+
+    val accumulator = int.time.group.combine(
+      lastStep.accumulator,
+      int.time.ordering.min(
+        maxDt,
+        int.time.group.combine(
+          newFrameTime,
+          int.time.group.inverse(lastStep.frameTime)
+        )
+      )
+    )
+
+    val (newState, prevState, newSymTime, newAccumulator) =
+      consume(lastStep.current, lastStep.symTime, minDt, accumulator)
+
+    Step(
+      newState,
+      prevState orElse Some(lastStep.current),
+      newFrameTime,
+      newSymTime,
+      newAccumulator
+    )
+  }
+
+  def compute(
+    samplingTimes: Iterable[T], minDt: T, maxDt: T
   ): Iterable[S] =
     samplingTimes
-      .scanLeft(
-        Step(initial, None, startTime, startTime, int.time.group.empty)
-      ) { (lastStep, newFrameTime) =>
-
-          val accumulator = int.time.group.combine(
-            lastStep.accumulator,
-            int.time.ordering.min(
-              maxDt,
-              int.time.group.combine(
-                newFrameTime,
-                int.time.group.inverse(lastStep.frameTime)
-              )
-            )
-          )
-
-          val (newState, prevState, newSymTime, newAccumulator) =
-            consume(lastStep.current, lastStep.symTime, minDt, accumulator)
-
-          Step(
-            newState,
-            prevState orElse Some(lastStep.current),
-            newFrameTime,
-            newSymTime,
-            newAccumulator
-          )
-        }
-      .map { step =>
-        step.previous.fold(step.current) { previous =>
-          val alpha = int.time.ratio(step.accumulator, minDt)
-
-          int.state.semigroup.combine(
-            int.state.scale(step.current, alpha),
-            int.state.scale(previous, 1 - alpha)
-          )
-        }
+      .headOption
+      .fold(Iterable.empty[S]) { firstSample =>
+        samplingTimes
+          .tail
+          .scanLeft(
+            Step(int.state.monoid.empty, None, firstSample, firstSample, int.time.group.empty)
+          )(nextStep(minDt, maxDt))
+          .map(interpolate(minDt))
       }
 }

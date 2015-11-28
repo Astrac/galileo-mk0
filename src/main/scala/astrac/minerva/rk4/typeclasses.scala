@@ -10,7 +10,7 @@ trait Scalable[S] {
 trait State[S, D, T] extends Scalable[S] {
   def derivate: Derivate[D, T]
   def fromDerivate(d: D, t: T): S
-  def semigroup: Semigroup[S]
+  def monoid: Monoid[S]
 }
 
 object State extends StateInstances

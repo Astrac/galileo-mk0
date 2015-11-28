@@ -23,7 +23,7 @@ trait TimeInstances extends CommonInstances {
 }
 
 trait LowPriorityDerivateInstances extends CommonInstances {
-  implicit def doubleDerivate[T](implicit tm: Time[T]) =
+  implicit def doubleDerivateGen[T](implicit tm: Time[T]) =
     new Derivate[Double, T] with DoubleScalable {
       val monoid = doubleInstance
       val time = tm
@@ -38,20 +38,11 @@ trait DerivateInstances extends LowPriorityDerivateInstances {
     }
 }
 
-trait LowPriorityStateInstances extends CommonInstances {
-  implicit def doubleState(implicit dv: Derivate[Double, Double]) =
-    new State[Double, Double, Double] with DoubleScalable {
-      val derivate = dv
-      def fromDerivate(d: Double, t: Double) = d * t
-      val semigroup = doubleInstance
-    }
-}
-
-trait StateInstances extends LowPriorityStateInstances {
+trait StateInstances extends CommonInstances {
   implicit lazy val doubleState =
     new State[Double, Double, Double] with DoubleScalable {
-      val derivate = implicitly[Derivate[Double]]
+      val derivate = implicitly[Derivate[Double, Double]]
       def fromDerivate(d: Double, t: Double) = d * t
-      val semigroup = doubleInstance
+      val monoid = doubleInstance
     }
 }
