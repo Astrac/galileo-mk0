@@ -1,14 +1,10 @@
 package astrac.minerva.rk4
 
-import cats._
+import cats.Group
+import cats.Monoid
+import cats.std.double._
 
 trait CommonInstances {
-  implicit val doubleInstance = new Group[Double] {
-    def inverse(a: Double): Double = -a
-    val empty: Double = 0
-    def combine(x: Double, y: Double): Double = x + y
-  }
-
   trait DoubleScalable extends Scalable[Double] {
     def scale(n: Double, factor: Double) = n * factor
   }
@@ -16,24 +12,16 @@ trait CommonInstances {
 
 trait TimeInstances extends CommonInstances {
   implicit lazy val doubleTime = new Time[Double] with DoubleScalable {
-    val group = doubleInstance
+    val group = implicitly[Group[Double]]
     val ordering = implicitly[Ordering[Double]]
     def ratio(num: Double, den: Double) = num / den
   }
 }
 
-trait LowPriorityDerivateInstances extends CommonInstances {
-  implicit def doubleDerivateGen[T](implicit tm: Time[T]) =
-    new Derivate[Double, T] with DoubleScalable {
-      val monoid = doubleInstance
-      val time = tm
-    }
-}
-
-trait DerivateInstances extends LowPriorityDerivateInstances {
+trait DerivateInstances extends CommonInstances {
   implicit lazy val doubleDerivate =
     new Derivate[Double, Double] with DoubleScalable {
-      val monoid = doubleInstance
+      val monoid = implicitly[Group[Double]]
       val time = implicitly[Time[Double]]
     }
 }
@@ -43,6 +31,6 @@ trait StateInstances extends CommonInstances {
     new State[Double, Double, Double] with DoubleScalable {
       val derivate = implicitly[Derivate[Double, Double]]
       def fromDerivate(d: Double, t: Double) = d * t
-      val monoid = doubleInstance
+      val monoid = implicitly[Monoid[Double]]
     }
 }
