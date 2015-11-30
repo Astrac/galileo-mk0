@@ -10,31 +10,31 @@ class Rk4Spec extends FlatSpec with Matchers {
   def integrate(fn: Double => Double, samples: Iterable[Double]) =
     integrator(fn).compute(samples, minDt, maxDt)
 
-  "The RK4 integration" should "integrate `y = 1` in [0, 1] giving 1" in {
+  "The RK4 integration" should "integrate `f(x) = 1` in [0, 1] giving 1" in {
     integrate(x => 1, 0.0 to 1.0 by minDt).last should equal(1.0 +- 0.05)
   }
 
-  it should "integrate `y = x` in [0, 1] giving 0.5" in {
+  it should "integrate `f(x) = x` in [0, 1] giving 0.5" in {
     integrate(x => x, 0.0 to 1.0 by minDt).last should equal(0.5 +- 0.05)
   }
 
-  it should "integrate `y = x + 2` in [0, 1] giving 2.5" in {
+  it should "integrate `f(x) = x + 2` in [0, 1] giving 2.5" in {
     integrate(x => x + 2, 0.0 to 1.0 by minDt).last should equal(2.5 +- 0.05)
   }
 
-  it should "integrate `y = x` in [1, 2] giving 1.5" in {
+  it should "integrate `f(x) = x` in [1, 2] giving 1.5" in {
     integrate(x => x, 1.0 to 2.0 by minDt).last should equal(1.5 +- 0.05)
   }
 
-  it should "integrate `y = x + 2` in [1, 3] giving 8" in {
+  it should "integrate `f(x) = x + 2` in [1, 3] giving 8" in {
     integrate(x => x + 2, 1.0 to 3.0 by minDt).last should equal(8.0 +- 0.05)
   }
 
-  it should "integrate `y = sin x` in [π, π] giving 0" in {
+  it should "integrate `f(x) = sin x` in [π, π] giving 0" in {
     integrate(x => math.sin(x), (- math.Pi) to math.Pi by minDt).last should equal(0.0 +- 0.05)
   }
 
-  it should "integrate `y = x^2` in [1, 3] giving 26/3" in {
+  it should "integrate `f(x) = x^2` in [1, 3] giving 26/3" in {
     integrate(x => x * x, 1.0 to 3.0 by minDt).last should equal((26.0 / 3.0) +- 0.05)
   }
 

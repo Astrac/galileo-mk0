@@ -67,7 +67,10 @@ class Integrator[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
   }
 
   def compute(
-    samplingTimes: Iterable[T], minDt: T, maxDt: T
+    samplingTimes: Iterable[T],
+    minDt: T,
+    maxDt: T,
+    startState: S = int.state.monoid.empty
   ): Iterable[S] =
     samplingTimes
       .headOption
@@ -75,7 +78,7 @@ class Integrator[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
         samplingTimes
           .tail
           .scanLeft(
-            Step(int.state.monoid.empty, None, firstSample, firstSample, int.time.group.empty)
+            Step(startState, None, firstSample, firstSample, int.time.group.empty)
           )(nextStep(minDt, maxDt))
           .map(interpolate(minDt))
       }
