@@ -1,4 +1,4 @@
-package astrac.minerva
+package astrac.galileo
 
 import scala.annotation.tailrec
 

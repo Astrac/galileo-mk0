@@ -1,4 +1,4 @@
-package astrac.minerva.rk4
+package astrac.galileo.rk4
 
 class Stepper[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
   def in(t: T, dt: T)(initial: S) = step(initial, fn, t, dt)

@@ -1,4 +1,4 @@
-package astrac.minerva
+package astrac.galileo
 
 import org.scalatest.{FlatSpec, Matchers}
 import rk4._

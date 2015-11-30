@@ -1,6 +1,6 @@
 lazy val scalaV = "2.11.7"
 
-lazy val shared = (project in file(".")).
+lazy val root = (project in file(".")).
   settings(
     libraryDependencies ++= Seq(
       "org.spire-math" %% "cats" % "0.3.0",
