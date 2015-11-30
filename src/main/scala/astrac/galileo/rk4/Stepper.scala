@@ -1,28 +1,27 @@
 package astrac.galileo.rk4
 
 class Stepper[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
-  def in(t: T, dt: T)(initial: S) = step(initial, fn, t, dt)
+  def in(t: T, dt: T)(initial: S) = step(initial, t, dt)
 
-  def evaluate(
+  private def evaluate(
     state: S,
-    derivate: (S, T) => D,
     t: T,
     dt: T,
     lastDerivate: D
   ): D = {
-    derivate(
+    fn(
       int.state.monoid.combine(state, int.state.fromDerivate(lastDerivate, dt)),
       int.time.group.combine(t, dt)
     )
   }
 
-  def step(initial: S, fn: (S, T) => D, t: T, dt: T): S = {
+  private def step(initial: S, t: T, dt: T): S = {
     import int._
 
-    val a = evaluate(initial, fn, t, time.group.empty, derivate.monoid.empty)
-    val b = evaluate(initial, fn, t, time.half(dt), a)
-    val c = evaluate(initial, fn, t, time.half(dt), b)
-    val d = evaluate(initial, fn, t, dt, c)
+    val a = evaluate(initial, t, time.group.empty, derivate.monoid.empty)
+    val b = evaluate(initial, t, time.half(dt), a)
+    val c = evaluate(initial, t, time.half(dt), b)
+    val d = evaluate(initial, t, dt, c)
 
     val dxdt = derivate.scale(derivate.monoid.combineAll(
       a ::
