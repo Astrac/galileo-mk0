@@ -6,9 +6,9 @@ import org.scalatest.{FlatSpec, Matchers}
 
 object KinematicSpec {
   case class Vec(x: Double, y: Double)
-  case class Body(pos: Vec, vel: Vec)
+  case class Particle(pos: Vec, vel: Vec)
   case class Derivative(vel: Vec, acc: Vec)
-  type KinematicFn = (Body, Double) => Derivative
+  type KinematicFn = (Particle, Double) => Derivative
 }
 
 class KinematicSpec extends FlatSpec with Matchers {
@@ -21,8 +21,8 @@ class KinematicSpec extends FlatSpec with Matchers {
     // Constant downward acceleration of -1 m/s²
     val acc = Vec(0, -1.0)
 
-    // Body starts from (0, 0) with v(x) = 1 m/s and v(y) = 2 m/s
-    val initial = Body(Vec(0, 0.0001), Vec(1, 2))
+    // Particle starts from (0, 0) with v(x) = 1 m/s and v(y) = 2 m/s
+    val initial = Particle(Vec(0, 0.0001), Vec(1, 2))
 
     val fn: KinematicFn = (b, _) => Derivative(b.vel, acc)
 
