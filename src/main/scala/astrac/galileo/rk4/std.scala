@@ -18,9 +18,9 @@ trait TimeInstances extends CommonInstances {
   }
 }
 
-trait DerivateInstances extends CommonInstances {
-  implicit lazy val doubleDerivate =
-    new Derivate[Double, Double] with DoubleScalable {
+trait DerivativeInstances extends CommonInstances {
+  implicit lazy val doubleDerivative =
+    new Derivative[Double, Double] with DoubleScalable {
       val monoid = implicitly[Group[Double]]
       val time = implicitly[Time[Double]]
     }
@@ -29,8 +29,8 @@ trait DerivateInstances extends CommonInstances {
 trait StateInstances extends CommonInstances {
   implicit lazy val doubleState =
     new State[Double, Double, Double] with DoubleScalable {
-      val derivate = implicitly[Derivate[Double, Double]]
-      def fromDerivate(d: Double, t: Double) = d * t
+      val derivative = implicitly[Derivative[Double, Double]]
+      def fromDerivative(d: Double, t: Double) = d * t
       val monoid = implicitly[Monoid[Double]]
     }
 }

@@ -4,15 +4,15 @@ import astrac.galileo.rk4.auto._
 import cats.std.double._
 import org.scalatest.{FlatSpec, Matchers}
 
-object KinematicSpecs {
+object KinematicSpec {
   case class Vec(x: Double, y: Double)
   case class Body(pos: Vec, vel: Vec)
   case class Derivative(vel: Vec, acc: Vec)
   type KinematicFn = (Body, Double) => Derivative
 }
 
-class KinematicSpecs extends FlatSpec with Matchers {
-  import KinematicSpecs._
+class KinematicSpec extends FlatSpec with Matchers {
+  import KinematicSpec._
 
   val minDt = 0.001
   val maxDt = 0.25

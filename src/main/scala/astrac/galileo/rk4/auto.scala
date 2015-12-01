@@ -48,76 +48,76 @@ trait AutoInstances {
     }
   }
 
-  implicit def autoDerivateHNil[T: Time] = new Derivate[HNil, T] {
+  implicit def autoDerivativeHNil[T: Time] = new Derivative[HNil, T] {
     def monoid = autoGroupHNil
     lazy val time = implicitly[Time[T]]
     def scale(d: HNil, f: Double) = HNil
   }
 
-  implicit def autoDerivateHCons[T, H, L <: HList](
+  implicit def autoDerivativeHCons[T, H, L <: HList](
     implicit
     tm: Time[T],
-    hDer: Lazy[Derivate[H, T]],
-    lDer: Derivate[L, T],
+    hDer: Lazy[Derivative[H, T]],
+    lDer: Derivative[L, T],
     mon: Monoid[H :: L]
-  ) = new Derivate[H :: L, T] {
+  ) = new Derivative[H :: L, T] {
     lazy val time = tm
     lazy val monoid = mon
     def scale(d: H :: L, f: Double) = hDer.value.scale(d.head, f) :: lDer.scale(d.tail, f)
   }
 
-  implicit def autoDerivate[D, Repr, T](
+  implicit def autoDerivative[D, Repr, T](
     implicit
     tm: Time[T],
     gen: Generic.Aux[D, Repr],
-    genDerivate: Derivate[Repr, T],
+    genDerivative: Derivative[Repr, T],
     mon: Monoid[D]
-  ): Derivate[D, T] = new Derivate[D, T] {
+  ): Derivative[D, T] = new Derivative[D, T] {
     lazy val time = tm
     lazy val monoid = mon
-    def scale(d: D, f: Double) = gen.from(genDerivate.scale(gen.to(d), f))
+    def scale(d: D, f: Double) = gen.from(genDerivative.scale(gen.to(d), f))
   }
 
   implicit def autoStateHNil[T](
     implicit
     tm: Time[T],
-    dr: Derivate[HNil, T]
+    dr: Derivative[HNil, T]
   ) = new State[HNil, HNil, T] {
-    lazy val derivate = dr
+    lazy val derivative = dr
     lazy val monoid = autoGroupHNil
-    def fromDerivate(d: HNil, t: T) = HNil
+    def fromDerivative(d: HNil, t: T) = HNil
     def scale(s: HNil, f: Double) = HNil
   }
 
   implicit def autoStateHCons[T, DH, DL <: HList, SH, SL <: HList](
     implicit
     tm: Time[T],
-    hdr: Derivate[DH, T],
-    ldr: Derivate[DL, T],
-    dr: Derivate[DH :: DL, T],
+    hdr: Derivative[DH, T],
+    ldr: Derivative[DL, T],
+    dr: Derivative[DH :: DL, T],
     hst: State[SH, DH, T],
     lst: State[SL, DL, T],
     mon: Monoid[SH :: SL]
   ) = new State[SH :: SL, DH :: DL, T] {
-    lazy val derivate = dr
+    lazy val derivative = dr
     lazy val monoid = mon
-    def fromDerivate(d: DH :: DL, t: T) =
-      hst.fromDerivate(d.head, t) :: lst.fromDerivate(d.tail, t)
+    def fromDerivative(d: DH :: DL, t: T) =
+      hst.fromDerivative(d.head, t) :: lst.fromDerivative(d.tail, t)
     def scale(s: SH :: SL, f: Double) =
       hst.scale(s.head, f) :: lst.scale(s.tail, f)
   }
 
   implicit def autoState[S, SRepr, D, DRepr, T](
     implicit
-    dr: Derivate[D, T],
+    dr: Derivative[D, T],
     sGen: Generic.Aux[S, SRepr],
     dGen: Generic.Aux[D, DRepr],
     genState: Lazy[State[SRepr, DRepr, T]],
     mon: Monoid[S]
   ): State[S, D, T] = new State[S, D, T] {
-    lazy val derivate = dr
+    lazy val derivative = dr
     lazy val monoid = mon
-    def fromDerivate(d: D, t: T) = sGen.from(genState.value.fromDerivate(dGen.to(d), t))
+    def fromDerivative(d: D, t: T) = sGen.from(genState.value.fromDerivative(dGen.to(d), t))
     def scale(s: S, f: Double) = sGen.from(genState.value.scale(sGen.to(s), f))
   }
 }
