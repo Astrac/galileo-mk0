@@ -1,14 +1,15 @@
 package astrac.galileo
 
 import org.scalatest.{FlatSpec, Matchers}
-import rk4._
+import spire.std.double._
+import rk4.auto._
 
 class Rk4Spec extends FlatSpec with Matchers {
   val minDt = 0.001
   val maxDt = 0.25
 
   def integrate(fn: Double => Double, samples: Iterable[Double]) =
-    integrator(fn).compute(samples, minDt, maxDt)
+    rk4.integrate((_: Double, x: Double) => fn(x))(samples, minDt, maxDt)
 
   "The RK4 integration" should "integrate `f(x) = 1` in [0, 1] giving 1" in {
     integrate(x => 1, 0.0 to 1.0 by minDt).last should equal(1.0 +- 0.05)
@@ -31,7 +32,7 @@ class Rk4Spec extends FlatSpec with Matchers {
   }
 
   it should "integrate `f(x) = sin x` in [π, π] giving 0" in {
-    integrate(x => math.sin(x), (- math.Pi) to math.Pi by minDt).last should equal(0.0 +- 0.05)
+    integrate(x => math.sin(x), (-math.Pi) to math.Pi by minDt).last should equal(0.0 +- 0.05)
   }
 
   it should "integrate `f(x) = x^2` in [1, 3] giving 26/3" in {

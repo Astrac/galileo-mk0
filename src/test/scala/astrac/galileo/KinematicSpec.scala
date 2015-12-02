@@ -1,7 +1,7 @@
 package astrac.galileo
 
 import astrac.galileo.rk4.auto._
-import cats.std.double._
+import spire.std.double._
 import org.scalatest.{FlatSpec, Matchers}
 
 object KinematicSpec {
@@ -28,11 +28,11 @@ class KinematicSpec extends FlatSpec with Matchers {
 
     val ticks = Stream.from(0).map(_.toDouble / 100)
 
-    val trajectory = ticks.zip(rk4.integrator(fn).compute(
+    val trajectory = ticks.zip(rk4.integrateGen(fn)(
       ticks,
       minDt,
       maxDt,
-      initial
+      Some(initial)
     ).takeWhile(_.pos.y > 0))
 
     trajectory should not be (empty)

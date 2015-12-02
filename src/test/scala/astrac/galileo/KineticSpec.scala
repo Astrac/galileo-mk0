@@ -1,16 +1,13 @@
 package astrac.galileo
 
 import astrac.galileo.rk4.auto._
-import cats.Group
-import cats.std.double._
+import spire.std.double._
 import org.scalatest.{FlatSpec, Matchers}
 
 object KineticSpecs {
   case class Vec(x: Double, y: Double)
 
-  object Vec {
-    val group = implicitly[Group[Vec]]
-  }
+  def vecSpace = implicitly[spire.algebra.VectorSpace[Vec, Double]]
 
   case class Particle(position: Vec, momentum: Vec, mass: Double) {
     def vel = Vec(momentum.x / mass, momentum.y / mass)
@@ -34,7 +31,7 @@ class KineticSpecs extends FlatSpec with Matchers {
     val fn: KineticFn = (b, _) => Derivative(b.vel, f)
 
     val ticks = Stream.from(0).map(_.toDouble / 100).take(1000)
-    val finalPoint: Particle = rk4.integrator(fn).compute(ticks, minDt, maxDt, b).last
+    val finalPoint: Particle = rk4.integrateGen(fn)(ticks, minDt, maxDt, Some(b)).last
 
     finalPoint.vel.x should equal(1.0 +- 0.1)
     finalPoint.vel.y should equal(1.0 +- 0.1)
@@ -49,7 +46,7 @@ class KineticSpecs extends FlatSpec with Matchers {
     val fn: KineticFn = (b, _) => Derivative(b.vel, f)
 
     val ticks = Stream.from(0).map(_.toDouble / 100).take(1000)
-    val finalPoint: Particle = rk4.integrator(fn).compute(ticks, minDt, maxDt, b).last
+    val finalPoint: Particle = rk4.integrateGen(fn)(ticks, minDt, maxDt, Some(b)).last
 
     finalPoint.vel.x should equal(sqrt2 +- 0.1)
     finalPoint.vel.y should equal(sqrt2 +- 0.1)
@@ -60,10 +57,10 @@ class KineticSpecs extends FlatSpec with Matchers {
   it should "be at rest if a force is applied for in a direction and then an equal force is applied in the opposite one for the same amount of time" in {
     val b = Particle(Vec(0.0, 0.0), Vec(0.0, 0.0), 1)
     val f = Vec(2, 3)
-    val fn: KineticFn = (b, t) => Derivative(b.vel, if (t < 5) f else Vec.group.inverse(f))
+    val fn: KineticFn = (b, t) => Derivative(b.vel, if (t < 5) f else vecSpace.negate(f))
 
     val ticks = Stream.from(0).map(_.toDouble / 100).take(1000)
-    val finalPoint: Particle = rk4.integrator(fn).compute(ticks, minDt, maxDt, b).last
+    val finalPoint: Particle = rk4.integrateGen(fn)(ticks, minDt, maxDt, Some(b)).last
 
     finalPoint.vel.x should equal(0.0 +- 0.1)
     finalPoint.vel.y should equal(0.0 +- 0.1)

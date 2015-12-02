@@ -1,35 +1,33 @@
 package astrac.galileo.rk4
 
-class Stepper[S, T, D](fn: (S, T) => D)(implicit int: Integrable[S, D, T]) {
-  def in(t: T, dt: T)(initial: S) = step(initial, t, dt)
+import spire.algebra._
+import spire.syntax.all._
 
-  private def evaluate(
-    state: S,
-    t: T,
-    dt: T,
-    lastDerivative: D
-  ): D = {
-    fn(
-      int.state.monoid.combine(state, int.state.fromDerivative(lastDerivative, dt)),
-      int.time.group.combine(t, dt)
-    )
+trait Stepper {
+
+  private def evaluate[V, S](
+    fn: (V, S) => V
+  )(
+    state: V, t: S, dt: S, lastDerivative: V
+  )(implicit vs: VectorSpace[V, S]): V = {
+    import vs.scalar
+
+    fn(state + (lastDerivative :* dt), t + dt)
   }
 
-  private def step(initial: S, t: T, dt: T): S = {
-    import int._
+  def step[V, S](fn: (V, S) => V)(initial: V, t: S, dt: S)(implicit vs: VectorSpace[V, S]): V = {
+    import vs.scalar
 
-    val a = evaluate(initial, t, time.group.empty, derivative.monoid.empty)
-    val b = evaluate(initial, t, time.half(dt), a)
-    val c = evaluate(initial, t, time.half(dt), b)
-    val d = evaluate(initial, t, dt, c)
+    val scalarTwo = scalar.fromInt(2)
+    val scalarSix = scalar.fromInt(6)
 
-    val dxdt = derivative.scale(derivative.monoid.combineAll(
-      a ::
-        derivative.scale(derivative.monoid.combine(b, c), 2) ::
-        d ::
-        Nil
-    ), 1.0 / 6.0)
+    val a = evaluate(fn)(initial, t, scalar.zero, vs.zero)
+    val b = evaluate(fn)(initial, t, dt / scalarTwo, a)
+    val c = evaluate(fn)(initial, t, dt / scalarTwo, b)
+    val d = evaluate(fn)(initial, t, dt, c)
 
-    state.monoid.combine(initial, state.fromDerivative(dxdt, dt))
+    val dxdt = (a + b + b + c + c + d) :/ scalarSix
+
+    initial + (dxdt :* dt)
   }
 }
