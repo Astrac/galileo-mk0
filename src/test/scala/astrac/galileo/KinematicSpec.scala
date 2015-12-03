@@ -28,7 +28,7 @@ class KinematicSpec extends FlatSpec with Matchers {
 
     val ticks = Stream.from(0).map(_.toDouble / 100)
 
-    val trajectory = ticks.zip(rk4.integrateGen(fn)(
+    val trajectory = ticks.zip(rk4.integrate(fn)(
       ticks,
       minDt,
       maxDt,

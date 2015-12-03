@@ -72,45 +72,28 @@ trait Integrator extends Stepper {
     Step(newState, prevState orElse Some(lastStep.current), newFrameTime, newSymTime, newAccumulator)
   }
 
-  def integrate[V, S](
-    fn: (V, S) => V
+  def integrate[FN, VS, VD, S, VRepr](
+    fn: FN
   )(
     samplingTimes: Iterable[S],
     minDt: S,
     maxDt: S,
-    startState: Option[V] = None
+    startState: Option[VS] = None
   )(
     implicit
-    vs: VectorSpace[V, S],
+    int: Integrable[FN, VS, VD, S, VRepr],
+    vs: VectorSpace[VRepr, S],
     sOrd: Order[S]
-  ): Iterable[V] =
+  ): Iterable[VS] =
     samplingTimes
       .headOption
-      .fold(Iterable.empty[V]) { firstSample =>
+      .fold(Iterable.empty[VRepr]) { firstSample =>
         samplingTimes
           .tail
           .scanLeft(
-            Step(startState.getOrElse(vs.zero), None, firstSample, firstSample, vs.scalar.zero)
-          )(nextStep(fn)(minDt, maxDt))
+            Step(startState.map(int.sRepr.to).getOrElse(vs.zero), None, firstSample, firstSample, vs.scalar.zero)
+          )(nextStep(int.gen(fn))(minDt, maxDt))
           .map(interpolate(minDt))
       }
-
-  def integrateGen[V, D, S, VRepr](
-    fn: (V, S) => D
-  )(
-    samplingTimes: Iterable[S],
-    minDt: S,
-    maxDt: S,
-    startState: Option[V] = None
-  )(
-    implicit
-    sGen: Generic.Aux[V, VRepr],
-    dGen: Generic.Aux[D, VRepr],
-    vs: VectorSpace[VRepr, S],
-    sOrd: Order[S]
-  ): Iterable[V] = {
-    val genFn: (VRepr, S) => VRepr = (vr, s) => dGen.to(fn(sGen.from(vr), s))
-
-    integrate(genFn)(samplingTimes, minDt, maxDt, startState.map(sGen.to)).map(sGen.from)
-  }
+      .map(int.sRepr.from)
 }

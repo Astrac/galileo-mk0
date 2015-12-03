@@ -9,7 +9,7 @@ class Rk4Spec extends FlatSpec with Matchers {
   val maxDt = 0.25
 
   def integrate(fn: Double => Double, samples: Iterable[Double]) =
-    rk4.integrate((_: Double, x: Double) => fn(x))(samples, minDt, maxDt)
+    rk4.integrate(fn)(samples, minDt, maxDt)
 
   "The RK4 integration" should "integrate `f(x) = 1` in [0, 1] giving 1" in {
     integrate(x => 1, 0.0 to 1.0 by minDt).last should equal(1.0 +- 0.05)
