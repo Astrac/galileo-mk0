@@ -4,7 +4,7 @@
 
 ## Intro
 
-This project contains some expeirments in creating a physics engine for scala/scala-js; I started it while reading and adapting [this series of articles](http://gafferongames.com/game-physics/integration-basics/) which use imperative programming and C++ for Scala and FP. At the moment it implements:
+This project contains some experiments in creating a physics engine for scala/scala-js; I started it while reading and adapting [this series of articles](http://gafferongames.com/game-physics/integration-basics/) which use imperative programming and C++ for Scala and FP. At the moment it implements:
 
 * A generic numeric integrator based on the [spire](https://github.com/non/spire) typeclasses
 * Auto-derivation of type-classes via the [shapeless](https://github.com/milessabin/shapeless) product generalisation:
@@ -33,7 +33,7 @@ The arguments are:
 
 ### Generic integration
 
-The generalisation is based on a shared generic representation of the _state_ and the _derivative_ typs of the (differential) function being integrated. This generic representation must form a `VectorSpace` with the _scalar_ type, which in turn must be ordered via the `Order` typeclass.
+The generalisation is based on a shared generic representation of the _state_ and the _derivative_ types of the (differential) function being integrated. This generic representation must form a `VectorSpace` with the _scalar_ type, which in turn must be ordered via the `Order` typeclass.
 
 The `Integrable` implicit is used to provide this generalisation and it is automatically provided for the following types:
 
