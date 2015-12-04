@@ -31,7 +31,7 @@ class KineticSpecs extends FlatSpec with Matchers {
     val fn: KineticFn = (b, _) => Derivative(b.vel, f)
 
     val ticks = Stream.from(0).map(_.toDouble / 100).take(1000)
-    val finalPoint: Particle = rk4.integrate(fn)(ticks, minDt, maxDt, Some(b)).last
+    val finalPoint: Particle = rk4.integrateStream(fn, b)(ticks, minDt, maxDt).last
 
     finalPoint.vel.x should equal(1.0 +- 0.1)
     finalPoint.vel.y should equal(1.0 +- 0.1)
@@ -46,7 +46,7 @@ class KineticSpecs extends FlatSpec with Matchers {
     val fn: KineticFn = (b, _) => Derivative(b.vel, f)
 
     val ticks = Stream.from(0).map(_.toDouble / 100).take(1000)
-    val finalPoint: Particle = rk4.integrate(fn)(ticks, minDt, maxDt, Some(b)).last
+    val finalPoint: Particle = rk4.integrateStream(fn, b)(ticks, minDt, maxDt).last
 
     finalPoint.vel.x should equal(sqrt2 +- 0.1)
     finalPoint.vel.y should equal(sqrt2 +- 0.1)
@@ -60,7 +60,7 @@ class KineticSpecs extends FlatSpec with Matchers {
     val fn: KineticFn = (b, t) => Derivative(b.vel, if (t < 5) f else vecSpace.negate(f))
 
     val ticks = Stream.from(0).map(_.toDouble / 100).take(1000)
-    val finalPoint: Particle = rk4.integrate(fn)(ticks, minDt, maxDt, Some(b)).last
+    val finalPoint: Particle = rk4.integrateStream(fn, b)(ticks, minDt, maxDt).last
 
     finalPoint.vel.x should equal(0.0 +- 0.1)
     finalPoint.vel.y should equal(0.0 +- 0.1)

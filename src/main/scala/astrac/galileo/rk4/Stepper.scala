@@ -5,17 +5,19 @@ import spire.syntax.all._
 
 trait Stepper {
 
-  private def evaluate[V, S](
-    fn: (V, S) => V
-  )(
-    state: V, t: S, dt: S, lastDerivative: V
-  )(implicit vs: VectorSpace[V, S]): V = {
+  private def evaluate[V, S](fn: (V, S) => V)(state: V, t: S, dt: S, lastDerivative: V)(
+    implicit
+    vs: VectorSpace[V, S]
+  ): V = {
     import vs.scalar
 
     fn(state + (lastDerivative :* dt), t + dt)
   }
 
-  def step[V, S](fn: (V, S) => V)(initial: V, t: S, dt: S)(implicit vs: VectorSpace[V, S]): V = {
+  def step[V, S](fn: (V, S) => V)(initial: V, t: S, dt: S)(
+    implicit
+    vs: VectorSpace[V, S]
+  ): V = {
     import vs.scalar
 
     val scalarTwo = scalar.fromInt(2)

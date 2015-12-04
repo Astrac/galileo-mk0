@@ -28,11 +28,10 @@ class KinematicSpec extends FlatSpec with Matchers {
 
     val ticks = Stream.from(0).map(_.toDouble / 100)
 
-    val trajectory = ticks.zip(rk4.integrate(fn)(
+    val trajectory = ticks.zip(rk4.integrateStream(fn, initial)(
       ticks,
       minDt,
-      maxDt,
-      Some(initial)
+      maxDt
     ).takeWhile(_.pos.y > 0))
 
     trajectory should not be (empty)
