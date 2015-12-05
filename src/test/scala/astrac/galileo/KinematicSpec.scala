@@ -1,8 +1,8 @@
 package astrac.galileo
 
 import astrac.galileo.rk4.auto._
-import spire.std.double._
 import org.scalatest.{FlatSpec, Matchers}
+import spire.std.double._
 
 object KinematicSpec {
   case class Vec(x: Double, y: Double)
@@ -14,10 +14,7 @@ object KinematicSpec {
 class KinematicSpec extends FlatSpec with Matchers {
   import KinematicSpec._
 
-  val minDt = 0.001
-  val maxDt = 0.25
-
-  "Integrating kinematics" should "correctly interpolate parabolic motion in 2D" in {
+  "Integrating kinematics" should "correctly approximate parabolic motion in 2D" in {
     // Constant downward acceleration of -1 m/s²
     val acc = Vec(0, -1.0)
 
@@ -26,28 +23,24 @@ class KinematicSpec extends FlatSpec with Matchers {
 
     val fn: KinematicFn = (b, _) => Derivative(b.vel, acc)
 
-    val ticks = Stream.from(0).map(_.toDouble / 100)
+    val trajectory = rk4
+      .integral(fn, initial)
+      .iterator(0.0, 0.1)
+      .takeWhile(_.value.pos.y >= 0)
+      .toList
 
-    val trajectory = ticks.zip(rk4.integrateStream(fn, initial)(
-      ticks,
-      minDt,
-      maxDt
-    ).takeWhile(_.pos.y > 0))
-
-    trajectory should not be (empty)
-
-    val highPoint = trajectory.maxBy(_._2.pos.y)
-    highPoint._1 should equal(2.0 +- 0.01)
-    highPoint._2.vel.x should equal(1.0 +- 0.01)
-    highPoint._2.vel.y should equal(0.0 +- 0.01)
-    highPoint._2.pos.x should equal(2.0 +- 0.01)
-    highPoint._2.pos.y should equal(2.0 +- 0.01)
+    val highPoint = trajectory.maxBy(_.value.pos.y)
+    highPoint.at should equal(2.0 +- 0.01)
+    highPoint.value.vel.x should equal(1.0 +- 0.01)
+    highPoint.value.vel.y should equal(0.0 +- 0.01)
+    highPoint.value.pos.x should equal(2.0 +- 0.01)
+    highPoint.value.pos.y should equal(2.0 +- 0.01)
 
     val lastPoint = trajectory.last
-    lastPoint._1 should equal(4.0 +- 0.01)
-    lastPoint._2.vel.x should equal(1.0 +- 0.01)
-    lastPoint._2.vel.y should equal(-2.0 +- 0.01)
-    lastPoint._2.pos.x should equal(4.0 +- 0.01)
-    lastPoint._2.pos.y should equal(0.0 +- 0.01)
+    lastPoint.at should equal(4.0 +- 0.01)
+    lastPoint.value.vel.x should equal(1.0 +- 0.01)
+    lastPoint.value.vel.y should equal(-2.0 +- 0.01)
+    lastPoint.value.pos.x should equal(4.0 +- 0.01)
+    lastPoint.value.pos.y should equal(0.0 +- 0.01)
   }
 }

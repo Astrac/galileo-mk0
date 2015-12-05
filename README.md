@@ -2,6 +2,8 @@
 
 [![Build status](https://travis-ci.org/Astrac/galileo.svg?branch=master)](https://travis-ci.org/Astrac/galileo)
 
+**This is outdated, best to refer to [tests](https://github.com/Astrac/galileo/tree/master/src/test/scala/astrac/galileo) for actual examples**
+
 ## Intro
 
 This project contains some experiments in creating a physics engine for scala/scala-js; I started it while reading and adapting [this series of articles](http://gafferongames.com/game-physics/integration-basics/) which use imperative programming and C++ for Scala and FP. At the moment it implements:

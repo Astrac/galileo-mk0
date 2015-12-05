@@ -1,17 +1,10 @@
 package astrac.galileo.rk4
 
-import shapeless._
-import spire.algebra.{Field, Order, VectorSpace}
-import spire.syntax.all._
+import shapeless.{::, Generic, HList, HNil, Lazy}
+import spire.algebra.{Field, VectorSpace}
+import spire.syntax.vectorSpace._
 
-trait AutoInstances {
-  implicit def trivialVectorSpace[T](implicit f: Field[T]) = new VectorSpace[T, T] {
-    override def negate(x: T) = -x
-    override def zero = f.zero
-    override def plus(x: T, y: T) = x + y
-    override def timesl(x: T, y: T) = x * y
-    override def scalar = f
-  }
+trait LowPriorityAutoInstances {
 
   implicit def autoVectorSpaceHNil[T](implicit f: Field[T]) = new VectorSpace[HNil, T] {
     override def negate(x: HNil) = HNil
@@ -44,6 +37,16 @@ trait AutoInstances {
     override def zero = gen.from(genVecSp.zero)
     override def plus(x: V, y: V) = gen.from(gen.to(x) + gen.to(y))
     override def timesl(x: S, y: V) = gen.from(x *: gen.to(y))
+    override def scalar = f
+  }
+}
+
+trait AutoInstances extends LowPriorityAutoInstances {
+  implicit def trivialVectorSpace[T](implicit f: Field[T]) = new VectorSpace[T, T] {
+    override def negate(x: T) = -x
+    override def zero = f.zero
+    override def plus(x: T, y: T) = x + y
+    override def timesl(x: T, y: T) = x * y
     override def scalar = f
   }
 }

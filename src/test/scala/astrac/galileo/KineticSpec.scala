@@ -7,10 +7,8 @@ import org.scalatest.{FlatSpec, Matchers}
 object KineticSpecs {
   case class Vec(x: Double, y: Double)
 
-  def vecSpace = implicitly[spire.algebra.VectorSpace[Vec, Double]]
-
   case class Particle(position: Vec, momentum: Vec, mass: Double) {
-    def vel = Vec(momentum.x / mass, momentum.y / mass)
+    lazy val vel = Vec(momentum.x / mass, momentum.y / mass)
   }
 
   case class Derivative(vel: Vec, force: Vec, massD: Double = 0)
@@ -21,17 +19,14 @@ object KineticSpecs {
 class KineticSpecs extends FlatSpec with Matchers {
   import KineticSpecs._
 
-  val minDt = 0.01
-  val maxDt = 0.25
-  val G = 1.0
+  val dt = 0.01
 
   "A particle in a kinetic system" should "keep its velocity if no force is applied" in {
     val b = Particle(Vec(0.0, 0.0), Vec(1.0, 1.0), 1)
     val f = Vec(0, 0)
     val fn: KineticFn = (b, _) => Derivative(b.vel, f)
 
-    val ticks = Stream.from(0).map(_.toDouble / 100).take(1000)
-    val finalPoint: Particle = rk4.integrateStream(fn, b)(ticks, minDt, maxDt).last
+    val finalPoint: Particle = rk4.integral(fn, b).inInterval(0.0, 10.0, dt).value
 
     finalPoint.vel.x should equal(1.0 +- 0.1)
     finalPoint.vel.y should equal(1.0 +- 0.1)
@@ -45,8 +40,7 @@ class KineticSpecs extends FlatSpec with Matchers {
     val f = Vec(sqrt2, sqrt2) // Magnitude 1 force vector at 45 degrees
     val fn: KineticFn = (b, _) => Derivative(b.vel, f)
 
-    val ticks = Stream.from(0).map(_.toDouble / 100).take(1000)
-    val finalPoint: Particle = rk4.integrateStream(fn, b)(ticks, minDt, maxDt).last
+    val finalPoint: Particle = rk4.integral(fn, b).inInterval(0.0, 10.0, dt).value
 
     finalPoint.vel.x should equal(sqrt2 +- 0.1)
     finalPoint.vel.y should equal(sqrt2 +- 0.1)
@@ -55,12 +49,13 @@ class KineticSpecs extends FlatSpec with Matchers {
   }
 
   it should "be at rest if a force is applied for in a direction and then an equal force is applied in the opposite one for the same amount of time" in {
+    val vecSpace = implicitly[spire.algebra.VectorSpace[Vec, Double]]
+
     val b = Particle(Vec(0.0, 0.0), Vec(0.0, 0.0), 1)
     val f = Vec(2, 3)
     val fn: KineticFn = (b, t) => Derivative(b.vel, if (t < 5) f else vecSpace.negate(f))
 
-    val ticks = Stream.from(0).map(_.toDouble / 100).take(1000)
-    val finalPoint: Particle = rk4.integrateStream(fn, b)(ticks, minDt, maxDt).last
+    val finalPoint: Particle = rk4.integral(fn, b).inInterval(0.0, 10.0, dt).value
 
     finalPoint.vel.x should equal(0.0 +- 0.1)
     finalPoint.vel.y should equal(0.0 +- 0.1)
