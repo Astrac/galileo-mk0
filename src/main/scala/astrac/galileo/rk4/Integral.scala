@@ -55,13 +55,16 @@ class Integral[V, S, Res](fn: (V, S) => V, initial: V)(
   private type Result = Integral.Result[Res, S]
 
   def inInterval(from: S, to: S, dt: S): ObservedResult = {
+    val (lower, upper, neg) = if (from < to) (from, to, false) else (to, from, true)
 
-    def inIntervalRec(from: S, initial: V): (V, S) =
-      if ((to - from) < dt) (initial, from)
-      else inIntervalRec(from + dt, step(fn)(initial, from, dt))
+    def inIntervalRec(lower: S, initial: V): (V, S) = {
+      if ((upper - lower) < dt) (initial, lower)
+      else inIntervalRec(lower + dt, step(fn)(initial, lower, dt))
+    }
 
-    val genRes = inIntervalRec(from, initial)
-    ObservedResult(repr.from(genRes._1), genRes._2, to)
+    val normRes = inIntervalRec(lower, initial)
+    val genRes = if (neg) (vs.negate(normRes._1), normRes._2) else normRes
+    ObservedResult(repr.from(genRes._1), genRes._2, upper)
   }
 
   def iterator(from: S, dt: S): Iterator[Result] =

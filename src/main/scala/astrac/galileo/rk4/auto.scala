@@ -4,6 +4,8 @@ import shapeless.{::, Generic, HList, HNil, Lazy}
 import spire.algebra.{Field, VectorSpace}
 import spire.syntax.vectorSpace._
 
+// TODO: Investigate shapeless-contrib rather than this
+
 trait LowPriorityAutoInstances {
 
   implicit def autoVectorSpaceHNil[T](implicit f: Field[T]) = new VectorSpace[HNil, T] {

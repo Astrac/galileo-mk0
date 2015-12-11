@@ -1,45 +1,56 @@
 package astrac.galileo
 
+import org.scalacheck.{Gen, Prop}
+import org.scalacheck.Prop.BooleanOperators
 import org.scalatest.{FlatSpec, Matchers}
-import spire.std.double._
+import org.scalatest.prop.Checkers
 import rk4.auto._
+import shapeless.contrib.scalacheck._
+import spire.std.double._
 
-class Rk4Spec extends FlatSpec with Matchers {
-  val dt = 0.001
+class Rk4Spec extends FlatSpec with Matchers with Checkers {
+  val steps = 10000.0
 
-  def integrate(fn: Double => Double, from: Double, to: Double) = {
-    rk4.integral(fn).inInterval(from, to, dt).value
+  val intervalBoundGen = Gen.choose(-15.0, 15.0)
+
+  val simpleFnGen = Gen.oneOf(Seq[(String, Double => Double, Double => Double)](
+    ("f(x) = 1", x => 1, x => x),
+    ("f(x) = x", x => x, x => 0.5 * x * x),
+    ("f(x) = x ^ 2", x => x * x, x => (1.0 / 3.0) * x * x * x),
+    ("f(x) = x + 3", x => x + 3, x => 0.5 * x * x + 3 * x),
+    ("f(x) = sin(x)", x => math.sin(x), x => -math.cos(x))
+  ))
+
+  "The RK4 integration" should "calculate an integral of a simple function over an arbitrary interval" in {
+    check(Prop.forAll(intervalBoundGen, intervalBoundGen, simpleFnGen) { (start, end, fn) =>
+      val (desc, der, int) = fn
+      val dt = math.abs((start - end) / steps)
+      val res = rk4.integral(der).inInterval(start, end, dt).value
+      val exp = int(end) - int(start)
+      val variance = 0.05 + math.abs(exp * 0.01)
+
+      (res >= exp - variance && res <= exp + variance) :|
+        (s"Calculated integral of `$desc` from $start to $end in $dt increments is: $res (expected: $exp +- $variance)")
+    })
   }
 
-  "The RK4 integration" should "integrate `f(x) = 1` in [0, 1] giving 1" in {
-    integrate(x => 1, 0.0, 1.0) should equal(1.0 +- 0.05)
-  }
+  it should "produce an iterator of an integral of a simple function from an arbitrary point" in {
+    check(Prop.forAll(intervalBoundGen, simpleFnGen) { (from, fn) =>
+      val (desc, der, int) = fn
+      val dt = 0.001
+      val res = rk4.integral(der).iterator(from, dt)
 
-  it should "integrate `f(x) = x` in [0, 1] giving 0.5" in {
-    integrate(x => x, 0.0, 1.0) should equal(0.5 +- 0.05)
-  }
-
-  it should "integrate `f(x) = x + 2` in [0, 1] giving 2.5" in {
-    integrate(x => x + 2, 0.0, 1.0) should equal(2.5 +- 0.05)
-  }
-
-  it should "integrate `f(x) = x` in [1, 2] giving 1.5" in {
-    integrate(x => x, 1.0, 2.0) should equal(1.5 +- 0.05)
-  }
-
-  it should "integrate `f(x) = x + 2` in [1, 3] giving 8" in {
-    integrate(x => x + 2, 1.0, 3.0) should equal(8.0 +- 0.05)
-  }
-
-  it should "integrate `f(x) = sin x` in [π, π] giving 0" in {
-    integrate(x => math.sin(x), (-math.Pi), math.Pi) should equal(0.0 +- 0.05)
-  }
-
-  it should "integrate `f(x) = x^2` in [1, 3] giving 26/3" in {
-    integrate(x => x * x, 1.0, 3.0) should equal((26.0 / 3.0) +- 0.05)
-  }
-
-  it should "produce a result with an empty state for a single sample" in {
-    integrate(x => x, 1.0, 1.0) should equal(0.0)
+      res
+        .map {
+          case rk4.Integral.Result(v, t) =>
+            val exp = int(t) - int(from)
+            val variance = math.abs((t - from) * 0.01) + math.abs(exp * 0.01)
+            (v >= exp - variance && v <= exp + variance) :|
+              (s"Iterated integral of `$desc` from $from in $dt increments is: $v at $t (expected: $exp +- $variance)")
+        }
+        .take(1000)
+        .toList
+        .foldLeft(Prop.forAll((_: Unit) => true))(_ && _)
+    })
   }
 }
