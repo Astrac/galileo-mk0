@@ -25,22 +25,22 @@ class KinematicSpec extends FlatSpec with Matchers {
 
     val trajectory = rk4
       .integral(fn, initial)
-      .iterator(0.0, 0.1)
+      .iterator(0.0, 0.01)
       .takeWhile(_.value.pos.y >= 0)
       .toList
 
     val highPoint = trajectory.maxBy(_.value.pos.y)
-    highPoint.at should equal(2.0 +- 0.01)
-    highPoint.value.vel.x should equal(1.0 +- 0.01)
-    highPoint.value.vel.y should equal(0.0 +- 0.01)
-    highPoint.value.pos.x should equal(2.0 +- 0.01)
-    highPoint.value.pos.y should equal(2.0 +- 0.01)
+    highPoint.at should equal(2.0 +- 0.05)
+    highPoint.value.vel.x should equal(1.0 +- 0.05)
+    highPoint.value.vel.y should equal(0.0 +- 0.05)
+    highPoint.value.pos.x should equal(2.0 +- 0.05)
+    highPoint.value.pos.y should equal(2.0 +- 0.05)
 
     val lastPoint = trajectory.last
-    lastPoint.at should equal(4.0 +- 0.01)
-    lastPoint.value.vel.x should equal(1.0 +- 0.01)
-    lastPoint.value.vel.y should equal(-2.0 +- 0.01)
-    lastPoint.value.pos.x should equal(4.0 +- 0.01)
-    lastPoint.value.pos.y should equal(0.0 +- 0.01)
+    lastPoint.at should equal(4.0 +- 0.05)
+    lastPoint.value.vel.x should equal(1.0 +- 0.05)
+    lastPoint.value.vel.y should equal(-2.0 +- 0.05)
+    lastPoint.value.pos.x should equal(4.0 +- 0.05)
+    lastPoint.value.pos.y should equal(0.0 +- 0.05)
   }
 }

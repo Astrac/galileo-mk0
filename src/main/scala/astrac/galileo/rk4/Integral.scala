@@ -3,7 +3,7 @@ package astrac.galileo.rk4
 import monifu.reactive.Observable
 import scala.annotation.tailrec
 import scala.concurrent.duration.FiniteDuration
-import spire.algebra.{Order, VectorSpace}
+import spire.algebra.{Field, Order, VectorSpace}
 import spire.syntax.order._
 import spire.syntax.vectorSpace._
 
@@ -11,12 +11,9 @@ object Integral {
 
   private def evaluate[V, S](fn: (V, S) => V)(state: V, t: S, dt: S, lastDerivative: V)(
     implicit
-    vs: VectorSpace[V, S]
-  ): V = {
-    import vs.scalar
-
-    fn(state + (lastDerivative :* dt), t + dt)
-  }
+    vs: VectorSpace[V, S],
+    sc: Field[S]
+  ): V = fn(state, t + dt)
 
   private def step[V, S](fn: (V, S) => V)(initial: V, from: S, dt: S)(
     implicit
@@ -39,7 +36,6 @@ object Integral {
 
   case class Result[V, S](value: V, at: S)
   case class ObservedResult[V, S](value: V, at: S, observedAt: S)
-
 }
 
 class Integral[V, S, Res](fn: (V, S) => V, initial: V)(
