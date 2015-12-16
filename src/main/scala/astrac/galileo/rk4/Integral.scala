@@ -80,6 +80,13 @@ class Integral[V, S, Res](fn: (V, S) => V, initial: V)(
     Observable.interval(delay).zip(observable(from, dt)).map(_._2)
   }
 
-  def sampledObservable(from: S, ticker: Observable[S], delay: FiniteDuration, maxSteps: Int): Observable[ObservedResult] =
-    ticker.combineLatest(delayedObservable(from, delay)).map(r => ObservedResult(r._2.value, r._2.at, r._1))
+  def sampledObservable(from: S, ticker: Observable[S], delay: FiniteDuration, maxSteps: Int): Observable[ObservedResult] = {
+    val samples = ticker
+      .combineLatest(delayedObservable(from, delay))
+      .map(r => ObservedResult(r._2.value, r._2.at, r._1))
+
+    samples.head.flatMap { first =>
+      samples.scan((first, first))((l, c) => (l._2, c)).filter(e => e != first && e._1.observedAt != e._2.observedAt).map(_._2)
+    }
+  }
 }
