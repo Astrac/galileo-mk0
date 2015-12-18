@@ -4,16 +4,6 @@ import scalajs.js
 import js.annotation.JSExport
 import org.scalajs.dom
 
-case class Vec2(x: Double, y: Double)
-
-object Vec2 {
-  def fromPolar(angle: Double, module: Double) = Vec2(math.cos(angle) * module, math.sin(angle) * module)
-}
-
-case class Particle(position: Vec2, velocity: Vec2)
-
-case class Derivative(velocity: Vec2, acceleration: Vec2)
-
 @JSExport("Demo")
 object Demo extends js.JSApp {
   import scalatags.JsDom.all._
@@ -86,7 +76,17 @@ object Demo extends js.JSApp {
     graphics.clearRect(0, 0, simCanvas.width, simCanvas.height)
   }
 
-  def redraw(particle: Particle): Unit = {
+  import astrac.galileo.data
+
+  type Vector = data.Vec2[Double]
+
+  val kinematic = data.kinematicBuilder[Vector, Vector, Vector]
+
+  def vector(x: Double, y: Double) = data.Vec2(x, y)
+
+  def fromPolar(angle: Double, module: Double) = data.Vec2(module * math.cos(angle), module * math.sin(angle))
+
+  def redraw(particle: kinematic.Particle): Unit = {
     clear()
     graphics.beginPath()
     graphics.lineWidth = 1.0
@@ -99,16 +99,16 @@ object Demo extends js.JSApp {
   }
 
   def shoot(gravity: Double, angle: Double, velocity: Double) = {
-    import astrac.galileo.rk4
+    import astrac.galileo.{data, rk4}
     import rk4.auto._
     import spire.std.double._
     import scala.concurrent.duration._
     import monifu.concurrent.Implicits.globalScheduler
 
-    val gravityFn: (Particle, Double) => Derivative = (p, t) => Derivative(p.velocity, Vec2(0, -gravity))
+    val gravityFn: (kinematic.Particle, Double) => kinematic.Derivative = (p, t) => kinematic.derivative(p.velocity, vector(0, -gravity))
 
     rk4
-      .integral(gravityFn, Particle(Vec2(0, 0), Vec2.fromPolar(angle.toRadians, velocity)))
+      .integral(gravityFn, kinematic.particle(vector(0, 0), fromPolar(angle.toRadians, velocity)))
       .delayedObservable(0.0, (1.0 / 60.0).seconds)
       .takeWhile(_.value.position.y >= 0)
       .foreach(p => redraw(p.value))
