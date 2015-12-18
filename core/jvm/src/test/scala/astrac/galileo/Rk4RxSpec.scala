@@ -26,7 +26,7 @@ class Rk4RxSpec extends BaseSpec {
         .take(1000)
         .foldLeft(Prop.forAll((_: Unit) => true))(_ && _)
 
-      Await.result(res.asFuture, 100.millis).getOrElse(fail("Observable resulted in None, Some expected"))
+      Await.result(res.asFuture, 500.millis).getOrElse(fail("Observable resulted in None, Some expected"))
     })
   }
 
@@ -42,7 +42,7 @@ class Rk4RxSpec extends BaseSpec {
         .map(_.reverse)
         .asFuture
 
-      val res = Await.result(resFuture, 150.millis).getOrElse(fail("Observable resulted in None, Some expected"))
+      val res = Await.result(resFuture, 500.millis).getOrElse(fail("Observable resulted in None, Some expected"))
 
       res.size should equal(10 +- 5)
 
@@ -68,7 +68,7 @@ class Rk4RxSpec extends BaseSpec {
         .map(_.reverse)
         .asFuture
 
-      val res = Await.result(resFuture, 150.millis).getOrElse(fail("Observable resulted in None, Some expected"))
+      val res = Await.result(resFuture, 500.millis).getOrElse(fail("Observable resulted in None, Some expected"))
 
       res.size should equal(5 +- 1)
 
