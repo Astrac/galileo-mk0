@@ -1,5 +1,6 @@
 package astrac.galileo.rk4
 
+import astrac.galileo.Representable
 import monifu.reactive.Observable
 import scala.annotation.tailrec
 import scala.concurrent.duration.FiniteDuration

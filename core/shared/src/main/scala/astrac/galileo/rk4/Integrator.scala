@@ -1,5 +1,6 @@
 package astrac.galileo.rk4
 
+import astrac.galileo.Representable
 import scala.annotation.tailrec
 import spire.algebra.{Order, VectorSpace}
 

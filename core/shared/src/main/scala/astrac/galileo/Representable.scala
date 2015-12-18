@@ -1,4 +1,4 @@
-package astrac.galileo.rk4
+package astrac.galileo
 
 import shapeless.Generic
 
