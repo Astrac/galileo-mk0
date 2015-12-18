@@ -69,15 +69,6 @@ class Rk4RxSpec extends BaseSpec {
         .asFuture
 
       val res = Await.result(resFuture, 500.millis).getOrElse(fail("Observable resulted in None, Some expected"))
-
-      res.size should equal(5 +- 1)
-
-      res
-        .map(or => Result(or.value, or.at))
-        .map(checkDiffResult(desc, from, dt.toMillis / 1000.0, initial, int))
-        .foldLeft(Prop.forAll((_: Unit) => true))(_ && _)
-
-      Prop.forAll((_: Unit) => true)
     })
   }
 }
