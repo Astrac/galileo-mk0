@@ -69,6 +69,10 @@ class Rk4RxSpec extends BaseSpec {
         .asFuture
 
       val res = Await.result(resFuture, 2.seconds).getOrElse(fail("Observable resulted in None, Some expected"))
+
+      res.size should equal(5 +- 1)
+      (res.size >= 4 && res.size <= 6) :|
+        (s"Expected 4 to 6 samples, got ${res.size}")
     })
   }
 }
