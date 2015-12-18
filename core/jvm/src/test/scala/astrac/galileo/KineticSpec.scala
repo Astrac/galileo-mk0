@@ -12,13 +12,9 @@ object KineticSpecs {
 
   val kinetic = data.kineticBuilder[Vec, Vec, Vec, Vec, Double, Double]
 
-  type Particle = data.KineticParticle[Vec, Vec, Double]
+  type KineticFn = (kinetic.Particle, Double) => kinetic.Derivative
 
-  type Derivative = data.KineticDerivative[Vec, Vec, Double]
-
-  type KineticFn = (Particle, Double) => Derivative
-
-  def velocity(p: Particle) = vector(p.momentum.x / p.mass, p.momentum.y / p.mass)
+  def velocity(p: kinetic.Particle) = vector(p.momentum.x / p.mass, p.momentum.y / p.mass)
 
 }
 
