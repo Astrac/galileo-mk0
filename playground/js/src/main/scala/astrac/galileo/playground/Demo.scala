@@ -80,7 +80,7 @@ object Demo extends js.JSApp {
 
   type Vector = data.Vec2[Double]
 
-  val kinematic = data.kinematicBuilder[Vector, Vector, Vector]
+  val kinematic = data.kinematicBuilder[Vector, Vector, Vector, Double]
 
   def vector(x: Double, y: Double) = data.Vec2(x, y)
 
@@ -105,7 +105,7 @@ object Demo extends js.JSApp {
     import scala.concurrent.duration._
     import monifu.concurrent.Implicits.globalScheduler
 
-    val gravityFn: (kinematic.Particle, Double) => kinematic.Derivative = (p, t) => kinematic.derivative(p.velocity, vector(0, -gravity))
+    val gravityFn = kinematic.constantAcceleration(vector(0, -gravity))
 
     rk4
       .integral(gravityFn, kinematic.particle(vector(0, 0), fromPolar(angle.toRadians, velocity)))

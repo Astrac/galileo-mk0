@@ -10,12 +10,7 @@ object KineticSpecs {
 
   def vector(x: Double, y: Double) = data.vector2(x, y)
 
-  val kinetic = data.kineticBuilder[Vec, Vec, Vec, Vec, Double, Double]
-
-  type KineticFn = (kinetic.Particle, Double) => kinetic.Derivative
-
-  def velocity(p: kinetic.Particle) = vector(p.momentum.x / p.mass, p.momentum.y / p.mass)
-
+  val kinetic = data.kineticBuilder[Vec, Vec, Vec, Vec, Double, Double, Double]
 }
 
 class KineticSpecs extends FlatSpec with Matchers {
@@ -25,13 +20,12 @@ class KineticSpecs extends FlatSpec with Matchers {
 
   "A particle in a kinetic system" should "keep its velocity if no force is applied" in {
     val b = kinetic.particle(vector(0.0, 0.0), vector(1.0, 1.0), 1)
-    val f = vector(0, 0)
-    val fn: KineticFn = (b, _) => kinetic.derivative(velocity(b), f, 0)
+    val fn = kinetic.constantForce(vector(0, 0))
 
     val finalPoint = rk4.integral(fn, b).inInterval(0.0, 10.0, dt).value
 
-    velocity(finalPoint).x should equal(1.0 +- 0.1)
-    velocity(finalPoint).y should equal(1.0 +- 0.1)
+    finalPoint.velocity.x should equal(1.0 +- 0.1)
+    finalPoint.velocity.y should equal(1.0 +- 0.1)
     finalPoint.position.x should equal(10.0 +- 0.1)
     finalPoint.position.y should equal(10.0 +- 0.1)
   }
@@ -40,12 +34,12 @@ class KineticSpecs extends FlatSpec with Matchers {
     val b = kinetic.particle(vector(0.0, 0.0), vector(0.0, 0.0), 10)
     val sqrt2 = math.sqrt(2)
     val f = vector(sqrt2, sqrt2) // Magnitude 1 force vector at 45 degrees
-    val fn: KineticFn = (b, _) => kinetic.derivative(velocity(b), f, 0)
+    val fn = kinetic.constantForce(f)
 
     val finalPoint = rk4.integral(fn, b).inInterval(0.0, 10.0, dt).value
 
-    velocity(finalPoint).x should equal(sqrt2 +- 0.1)
-    velocity(finalPoint).y should equal(sqrt2 +- 0.1)
+    finalPoint.velocity.x should equal(sqrt2 +- 0.1)
+    finalPoint.velocity.y should equal(sqrt2 +- 0.1)
     finalPoint.position.x should equal(sqrt2 * 5 +- 0.1)
     finalPoint.position.y should equal(sqrt2 * 5 +- 0.1)
   }
@@ -55,11 +49,11 @@ class KineticSpecs extends FlatSpec with Matchers {
 
     val b = kinetic.particle(vector(0.0, 0.0), vector(0.0, 0.0), 1)
     val f = vector(2, 3)
-    val fn: KineticFn = (b, t) => kinetic.derivative(velocity(b), if (t < 5) f else vecSpace.negate(f), 0)
+    val fn = kinetic.stateFunction((p, t) => if (t < 5) f else vecSpace.negate(f))
 
     val finalPoint = rk4.integral(fn, b).inInterval(0.0, 10.0, dt).value
 
-    velocity(finalPoint).x should equal(0.0 +- 0.1)
-    velocity(finalPoint).y should equal(0.0 +- 0.1)
+    finalPoint.velocity.x should equal(0.0 +- 0.1)
+    finalPoint.velocity.y should equal(0.0 +- 0.1)
   }
 }

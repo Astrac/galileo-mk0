@@ -44,10 +44,10 @@ trait LowPriorityAutoInstances {
 }
 
 trait AutoInstances extends LowPriorityAutoInstances {
-  implicit def trivialVectorSpace[T](implicit f: Field[T]) = new VectorSpace[T, T] {
-    override def negate(x: T) = -x
+  implicit def trivialVectorSpace[T](implicit f: Field[T]): VectorSpace[T, T] = new VectorSpace[T, T] {
+    override def negate(x: T) = f.negate(x)
     override def zero = f.zero
-    override def plus(x: T, y: T) = x + y
+    override def plus(x: T, y: T) = f.plus(x, y)
     override def timesl(x: T, y: T) = x * y
     override def scalar = f
   }

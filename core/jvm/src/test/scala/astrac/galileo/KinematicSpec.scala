@@ -10,7 +10,7 @@ object KinematicSpec {
 
   def vector(x: Double, y: Double) = data.Vec2(x, y)
 
-  val kinematic = data.kinematicBuilder[Vec, Vec, Vec]
+  val kinematic = data.kinematicBuilder[Vec, Vec, Vec, Double]
 
   type Particle = data.KinematicParticle[Vec, Vec]
 
@@ -32,7 +32,7 @@ class KinematicSpec extends FlatSpec with Matchers {
     val fn: KinematicFn = (b, _) => kinematic.derivative(b.velocity, acceleration)
 
     val trajectory = rk4
-      .integral(fn, initial)
+      .integral(kinematic.constantAcceleration(acceleration), initial)
       .iterator(0.0, 0.01)
       .takeWhile(_.value.position.y >= 0)
       .toList
