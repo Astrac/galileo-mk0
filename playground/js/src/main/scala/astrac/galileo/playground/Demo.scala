@@ -105,10 +105,11 @@ object Demo extends js.JSApp {
     import scala.concurrent.duration._
     import monifu.concurrent.Implicits.globalScheduler
 
+    val p = kinematic.particle(vector(0, 0), fromPolar(angle.toRadians, velocity))
     val gravityFn = kinematic.constantAcceleration(vector(0, -gravity))
 
     rk4
-      .integral(gravityFn, kinematic.particle(vector(0, 0), fromPolar(angle.toRadians, velocity)))
+      .integral(gravityFn, p)
       .delayedObservable(0.0, (1.0 / 60.0).seconds)
       .takeWhile(_.value.position.y >= 0)
       .foreach(p => redraw(p.value))

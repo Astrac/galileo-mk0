@@ -24,4 +24,10 @@ object Representable extends LowPriorityRepresentable {
     def to(s: T) = gen.to(s)
     def from(r: Repr) = gen.from(r)
   }
+
+  implicit def forIterable[T](implicit gen: Representable[T]): Representable[Iterable[T]] = new Representable[Iterable[T]] {
+    type Repr = Iterable[gen.Repr]
+    def to(ss: Iterable[T]) = ss.map(gen.to(_))
+    def from(r: Iterable[gen.Repr]) = r.map(gen.from)
+  }
 }

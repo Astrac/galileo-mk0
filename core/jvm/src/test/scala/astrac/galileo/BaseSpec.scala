@@ -13,6 +13,7 @@ class BaseSpec extends FlatSpec with Matchers with Checkers {
   val diffSteps = 25000.0
   val diffIntervalBoundGen = Gen.choose(-5.0, 5.0)
   val diffInitialGen = Gen.choose(-10.0, 10.0)
+  val diffInitialSetGen = Gen.containerOfN[Seq, Double](3, Gen.choose(-10.0, 10.0))
 
   val simpleFnGen = Gen.oneOf(Seq[(String, Double => Double, Double => Double)](
     ("f(x) = 1", x => 1, x => x),

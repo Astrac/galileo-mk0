@@ -55,6 +55,26 @@ class Rk4Spec extends BaseSpec {
     })
   }
 
+  it should "calculate an integral of a differential function over an arbitrary interval from a set of initial points" in {
+    check(Prop.forAll(diffIntervalBoundGen, diffIntervalBoundGen, diffFnGen, diffInitialSetGen) { (start, end, fn, initial) =>
+      val (desc, der, int) = fn
+      val dt = math.abs((start - end) / diffSteps)
+      val res = rk4.integral(der, initial).inInterval(start, end, dt).value
+      val exp = if (start < end) initial.map(int(end, start, _)) else initial.map(-int(start, end, _))
+      val variance = exp.map(e => 0.075 + math.abs(e * 0.01))
+
+      res
+        .zip(exp)
+        .zip(variance)
+        .map {
+          case ((r, e), v) =>
+            (r >= e - v && r <= e + v) :|
+              (s"Calculated integral of `$desc` from $start to $end in $dt increments is: $r (expected: $e +- $v)")
+        }
+        .foldLeft(Prop.forAll((_: Unit) => true))(_ && _)
+    })
+  }
+
   it should "produce an iterator of an integral of a differential function from an arbitrary point" in {
     check(Prop.forAll(diffIntervalBoundGen, diffFnGen, diffInitialGen) { (from, fn, initial) =>
       val (desc, der, int) = fn
