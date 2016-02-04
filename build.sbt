@@ -6,8 +6,8 @@ lazy val core = (crossProject in file("core"))
   .settings(
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.2.5",
-      "org.monifu" %%% "monifu" % "1.0-RC4",
-      "org.spire-math" %%% "cats" % "0.3.0",
+      "org.monifu" %%% "monifu" % "1.0",
+      "org.typelevel" %%% "cats" % "0.4.0",
       "org.spire-math" %%% "spire" % "0.11.0"
     ),
     scalaVersion := scalaV
@@ -23,7 +23,7 @@ lazy val core = (crossProject in file("core"))
 lazy val playground = crossProject.in(file("playground"))
   .settings(
     name := "playground",
-    scalaVersion := "2.11.7",
+    scalaVersion := scalaV,
     resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases")
   )
   .jvmSettings()
@@ -31,8 +31,8 @@ lazy val playground = crossProject.in(file("playground"))
     bootSnippet := "astrac.galileo.playground.Demo.main()",
     updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile),
     libraryDependencies ++= Seq(
-      "com.github.japgolly.scalacss" %%% "core" % "0.3.1",
-      "com.lihaoyi" %%% "scalatags" % "0.5.3",
+      "com.github.japgolly.scalacss" %%% "core" % "0.3.2",
+      "com.lihaoyi" %%% "scalatags" % "0.5.4",
       "org.denigma" %%% "threejs-facade" % "0.0.71-0.1.5",
       "org.scala-js" %%% "scalajs-dom" % "0.8.2"
     )
@@ -43,4 +43,7 @@ lazy val coreJvm = core.jvm
 lazy val playgroundJs = playground.js.dependsOn(coreJs)
 lazy val playgroundJvm = playground.jvm.dependsOn(coreJvm)
 
-lazy val root = (project in file(".")).enablePlugins(ScalaJSPlugin).aggregate(coreJs, coreJvm, playgroundJs, playgroundJvm)
+lazy val root = (project in file("."))
+  .settings(scalaVersion := scalaV)
+  .enablePlugins(ScalaJSPlugin)
+  .aggregate(coreJs, coreJvm, playgroundJs, playgroundJvm)
